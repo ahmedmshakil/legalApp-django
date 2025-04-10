@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
     # Add any extra fields you need for your user model
     pass
@@ -16,6 +17,7 @@ class LegalExpert(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Appointment(models.Model):
     legal_expert = models.ForeignKey(LegalExpert, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -25,3 +27,11 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"Appointment with {self.legal_expert} at {self.appointment_time}"
+
+
+class Question(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    legal_expert = models.ForeignKey(LegalExpert, on_delete=models.SET_NULL, null=True, blank=True)
+    question_text = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    answer = models.TextField(blank=True)

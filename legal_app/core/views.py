@@ -1,9 +1,11 @@
-from rest_framework import viewsets, generics, status
+from django.shortcuts import render, redirect
+from rest_framework import viewsets, generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
-from .models import LegalExpert, User, Appointment
-from .serializers import LegalExpertSerializer, UserSerializer, AppointmentSerializer
+from .models import LegalExpert, User, Appointment, Question
+from .serializers import LegalExpertSerializer, UserSerializer, AppointmentSerializer, QuestionSerializer
+from .forms import QuestionForm
 
 class LegalExpertViewSet(viewsets.ModelViewSet):
 
@@ -38,6 +40,24 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             serializer.save(user=request.user, expert=expert)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+def ask_question(request):
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.user = request.user
+            question.save()
+            # Optionally, send a confirmation message or redirect to a confirmation page
+            return render(request, 'question_confirmation.html')
+    else:
+        form = QuestionForm()
+    return render(request, 'ask_question.html', {'form': form})
 
 
 
